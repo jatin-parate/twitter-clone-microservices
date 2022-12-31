@@ -7,11 +7,13 @@ services:
     ports:
       - 3000:3000
     environment:
+      - 'NODE_ENV=local'
       - 'DB_URL=mongodb://mongo/twitter-auth'
       - 'REDIS_HOST=redis'
       - 'PORT=3000'
       - 'SESSION_SECRET=worldisfullofdevelopers'
       - 'PASSWORD_SALT=worldisfullofdevelopers'
+      - 'HOST=http://localhost:3000'
     volumes:
       - ./:/code
     command: yarn start:dev

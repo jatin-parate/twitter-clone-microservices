@@ -7,6 +7,7 @@ import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 // @ts-ignore
 import * as MongoStore from 'connect-mongo';
+import { resolve } from 'node:path';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -19,6 +20,8 @@ async function bootstrap() {
     fallbackOnErrors: true,
     fallback: true,
   });
+
+  app.useStaticAssets(resolve('public', 'avatars'), { prefix: '/avatars' });
 
   app.useGlobalPipes(
     new ValidationPipe({

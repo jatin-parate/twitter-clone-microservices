@@ -9,6 +9,8 @@ import {
   Body,
   Get,
   UnauthorizedException,
+  UseInterceptors,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import {
@@ -22,6 +24,7 @@ import { SignupDto } from './dtos/signup.dto';
 import { UserService } from './user/user.service';
 
 @Controller()
+@UseInterceptors(ClassSerializerInterceptor)
 export class AppController {
   constructor(private usersService: UserService) {}
 
