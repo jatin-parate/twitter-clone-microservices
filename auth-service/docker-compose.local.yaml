@@ -1,0 +1,39 @@
+version: "3"
+services:
+  auth:
+    build:
+      context: ./
+      dockerfile: local.Dockerfile
+    ports:
+      - 3000:3000
+    environment:
+      - 'DB_URL=mongodb://mongo/twitter-auth'
+      - 'REDIS_HOST=redis'
+      - 'PORT=3000'
+      - 'SESSION_SECRET=worldisfullofdevelopers'
+      - 'PASSWORD_SALT=worldisfullofdevelopers'
+    volumes:
+      - ./:/code
+    command: yarn start:dev
+    depends_on:
+      - mongo
+      - redis
+    links:
+      - mongo:mongo
+      - redis:redis
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis:/data
+
+  mongo:
+    image: mongo:5.0.4
+    volumes:
+      - mongodb:/data/db
+      - mongodb_config:/data/configdb
+
+volumes:
+  mongodb:
+  mongodb_config:
+  redis:
