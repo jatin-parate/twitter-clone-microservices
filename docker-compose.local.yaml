@@ -2,10 +2,8 @@ version: "3"
 services:
   auth:
     build:
-      context: ./
+      context: auth-service
       dockerfile: local.Dockerfile
-    ports:
-      - 3000:3000
     environment:
       - 'NODE_ENV=local'
       - 'DB_URL=mongodb://mongo/twitter-auth'
@@ -15,7 +13,7 @@ services:
       - 'PASSWORD_SALT=worldisfullofdevelopers'
       - 'HOST=http://localhost:3000'
     volumes:
-      - ./:/code
+      - ./auth-service:/code
     command: yarn start:dev
     depends_on:
       - mongo
@@ -23,6 +21,39 @@ services:
     links:
       - mongo:mongo
       - redis:redis
+
+  tweets:
+    build:
+      context: tweets-service
+      dockerfile: local.Dockerfile
+    environment:
+      - 'NODE_ENV=local'
+      - 'DB_URL=mongodb://mongo/twitter-tweets'
+      - 'REDIS_HOST=redis'
+      - 'PORT=3000'
+      - 'HOST=http://localhost:3000'
+      - 'AUTH_API_URL=http://auth:3000/auth'
+    volumes:
+      - ./tweets-service:/code
+    command: yarn start:dev
+    depends_on:
+      - mongo
+      - redis
+    links:
+      - mongo:mongo
+      - redis:redis
+      - auth:auth
+
+  nginx:
+    build: ./nginx
+    ports:
+      - 3000:80
+    links:
+      - auth:auth
+      - tweets:tweets
+    depends_on:
+      - auth
+      - tweets
 
   redis:
     image: redis:7-alpine

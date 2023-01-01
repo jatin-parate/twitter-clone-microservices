@@ -71,6 +71,7 @@ async function bootstrap() {
     app.useLogger(['log', 'error']);
   }
 
+  app.setGlobalPrefix('auth');
   const port = configService.get('PORT') || 3000;
   await app.listen(port);
 
