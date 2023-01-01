@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tweets-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tweets
+  template:
+    metadata:
+      labels:
+        app: tweets
+    spec:
+      containers:
+      - name: tweets
+        image: tweets-service:latest
+        resources:
+          limits:
+            cpu: "250m"
+            memory: "300Mi"
+        env:
+          - name: NODE_ENV
+            value: "local"
+          - name: PORT
+            value: "3000"
+          - name: DB_URL
+            value: 'mongodb://mongo-srv:27017/twitter-auth'
+          - name: REDIS_HOST
+            value: 'redis-srv'
+          - name: AUTH_API_URL
+            value: 'http://auth-srv:3000/auth'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: tweets-srv
+spec:
+  selector:
+    app: tweets
+  ports:
+  - name: tweets
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+

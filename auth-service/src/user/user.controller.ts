@@ -7,7 +7,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { UserService } from './user.service';
 import { ISessionInstance } from '../interfaces/app-session.interface';
@@ -15,6 +15,11 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { HttpSessionAuthGuard } from '../guards/http-session-auth.guard';
 import { EditProfileDto } from './dtos/edit-profile.dto';
 import type { Request } from 'express';
+
+const publicDir = resolve('public');
+if (!existsSync(publicDir)) {
+  mkdirSync(publicDir);
+}
 
 @Controller('users')
 export class UserController {
@@ -34,7 +39,7 @@ export class UserController {
     if (avatar) {
       const newFileName =
         session.email + '.' + avatar.originalname.split('.').at(-1)!;
-      writeFileSync(resolve('public', 'avatars', newFileName), avatar.buffer);
+      writeFileSync(resolve('public', newFileName), avatar.buffer);
       profilePictureURL = `${process.env.HOST}/avatars/${newFileName}`;
     }
 

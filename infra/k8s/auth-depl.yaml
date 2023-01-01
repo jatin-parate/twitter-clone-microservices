@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth
+  template:
+    metadata:
+      labels:
+        app: auth
+    spec:
+      containers:
+        - name: auth
+          image: auth-service:latest
+          env:
+            - name: NODE_ENV
+              value: "local"
+            - name: PORT
+              value: "3000"
+            - name: SESSION_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: SESSION_SECRET
+            - name: PASSWORD_SALT
+              valueFrom:
+                secretKeyRef:
+                  name: auth-secrets
+                  key: PASSWORD_SALT
+            - name: DB_URL
+              value: 'mongodb://mongo-srv:27017/twitter-auth'
+            - name: REDIS_HOST
+              value: 'redis-srv'
+            - name: HOST
+              value: 'http://twitter-clone.dev/auth'
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-srv
+spec:
+  selector:
+    app: auth
+  ports:
+  - name: auth
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+

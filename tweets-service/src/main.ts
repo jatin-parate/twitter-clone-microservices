@@ -1,14 +1,16 @@
 import * as morgan from 'morgan';
-import { BadRequestException, Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import * as session from 'express-session';
-import { useContainer, ValidationError } from 'class-validator';
-import { ConfigService } from '@nestjs/config';
-// @ts-ignore
-import * as MongoStore from 'connect-mongo';
-import { resolve } from 'node:path';
 import { AppModule } from './app.module';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { useContainer } from 'class-validator';
+import * as cookieParser from 'cookie-parser';
+import {
+  BadRequestException,
+  Logger,
+  ValidationError,
+  ValidationPipe,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -18,12 +20,8 @@ async function bootstrap() {
     },
   });
   app.use(morgan('tiny'));
-
-  useContainer(app.select(AppModule), {
-    fallbackOnErrors: true,
-    fallback: true,
-  });
-  Logger.debug(resolve('public'));
+  useContainer(app.select(AppModule), { fallbackOnErrors: true });
+  app.use(cookieParser());
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -45,27 +43,8 @@ async function bootstrap() {
   );
 
   const configService = app.get(ConfigService);
-  const isLocalEnv = configService.get('NODE_ENV') === 'local';
 
-  app.use(
-    session({
-      secret: configService.get('SESSION_SECRET')!,
-      resave: false,
-      rolling: true,
-      saveUninitialized: false,
-      cookie: {
-        secure: !isLocalEnv,
-        httpOnly: false,
-        maxAge: 2 * 24 * 60 * 60 * 1000,
-      },
-      store: MongoStore.create({
-        mongoUrl: configService.get('DB_URL')!,
-        collectionName: 'sessions',
-        autoRemove: 'interval',
-        autoRemoveInterval: 2 * 60,
-      }),
-    }),
-  );
+  const isLocalEnv = configService.get('NODE_ENV') === 'local';
 
   if (isLocalEnv) {
     app.useLogger(['log', 'error', 'debug', 'warn', 'verbose']);
@@ -73,13 +52,7 @@ async function bootstrap() {
     app.useLogger(['log', 'error']);
   }
 
-  app.setGlobalPrefix('auth');
-  app.useStaticAssets(
-    resolve('public'),
-    { prefix: '/auth' },
-    // { prefix: 'auth/avatars' },
-  );
-
+  app.setGlobalPrefix('tweets');
   const port = configService.get('PORT') || 3000;
   await app.listen(port);
 
