@@ -40,7 +40,7 @@ export class UserController {
       const newFileName =
         session.email + '.' + avatar.originalname.split('.').at(-1)!;
       writeFileSync(resolve('public', newFileName), avatar.buffer);
-      profilePictureURL = `${process.env.HOST}/avatars/${newFileName}`;
+      profilePictureURL = `${process.env.HOST}/${newFileName}`;
     }
 
     return await this.usersService.updateByDto(
